@@ -67,8 +67,8 @@ id = st.sidebar.selectbox("Client ID", id_client)
 clt=data[data["SK_ID_CURR"]==int(id)].drop(['TARGET', 'score'], axis=1)
 data_clt={"client_id":int(id) , "features":clt.to_dict(orient="records")[0]}
 
-#récupération du score de prédiction    
-resp = requests.post(url="http://DefaultResourceGroup-WEU7.westeurope.azurecontainer.io/predict", data= json.dumps(data_clt))
+#récupération du score de prédiction    ²
+resp = requests.post(url="https://fastapiwebap.azurewebsites.net/predict", data= json.dumps(data_clt))
 if resp.status_code == 200:
     result = resp.json()
 else:
