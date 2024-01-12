@@ -47,6 +47,18 @@ def predict_credit():
     return df_score
 df_score=predict_credit()
 
+#Chargement de la selectbox
+id = st.sidebar.selectbox("Client ID", id_client)
+
+# Envoi des données client à l'API
+clt=data[data["SK_ID_CURR"]==int(id)].drop(['TARGET', 'score'], axis=1)
+data_clt={"client_id":int(id) , "features":clt.to_dict(orient="records")[0]}
+
+#récupération du score de prédiction    ²
+resp = requests.post(url="https://fastapiwebap.azurewebsites.net/predict", data= json.dumps(data_clt))
+print(resp.status_code)
+result=resp.json()
+
 @st.cache_data
 def decision():
     data['decision'] = data['score'].apply(lambda x: 'Accepté' if x > threshold else 'Refusé')
@@ -60,19 +72,6 @@ def decision():
     return plot_data
 plot_data=decision()
 
-#Chargement de la selectbox
-id = st.sidebar.selectbox("Client ID", id_client)
-
-# Envoi des données client à l'API
-clt=data[data["SK_ID_CURR"]==int(id)].drop(['TARGET', 'score'], axis=1)
-data_clt={"client_id":int(id) , "features":clt.to_dict(orient="records")[0]}
-
-#récupération du score de prédiction    ²
-resp = requests.post(url="https://fastapiwebap.azurewebsites.net/predict", data= json.dumps(data_clt))
-if resp.status_code == 200:
-    result = resp.json()
-else:
-    print(resp.json())
 
 # Centrage de l'image du logo dans la sidebar
 col1, col2, col3 = st.columns([1,1,1])
