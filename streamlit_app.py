@@ -48,6 +48,7 @@ def predict_credit():
 df_score=predict_credit()
 
 #Chargement de la selectbox
+st.sidebar.header("Sélectionnez un client")
 id = st.sidebar.selectbox("Client ID", id_client)
 
 # Envoi des données client à l'API
@@ -115,29 +116,32 @@ with tabs[0]:
 
     st.write(f'Nombre de clients: {len(data)}')
 
-    st.write(f'Principales caractéristiques') 
+    st.subheader(f"Principales caractéristiques sur l'ensemble de la population") 
     # Centrage de l'image de la feature importance
     image = Image.open("sum_plot.png")
     st.image(image, use_column_width="always")
     
     #plot un camembert pour la décision crédit et pourcentage
     colors = {'Accepté': 'green', 'Refusé': 'red'}
-    fig=px.pie(plot_data, names='Decision', values='Count', title='décision crédit',
+    fig=px.pie(plot_data, names='Decision', values='Count', title="Décision crédit sur l'ensemble de la population",
              hover_data=['Percentage'], labels={'Percentage': 'Percentage (%)'}, color= 'Decision', color_discrete_map=colors)
     st.plotly_chart(fig)
     
 with tabs[1]:
     st.header('Résultats client')
+    st.subheader("Jauge score client")
+    st.write("Le crédit n'est accordé que si le score apparait dans le vert")
     # Plot gauge
     st.plotly_chart(gauge, use_container_width=True)
     resp_score="{:.2%}".format(result['score'])
     # Plot local feature importance
+    st.subheader("Principales caractéristiques influençant le résultat")
     st_shap(shap.plots.waterfall(exp[idx]))
  
 with tabs[2]:
-    st.header('Positionnement')
+    st.header('Positionnement du client selon critères')
     st.write('Histogramme : la valeur pour le client apparait en rouge')
-    feat_1 = st.selectbox("Sélectionnez une caractéristique", data.columns)
+    feat_1 = st.selectbox("Sélectionnez une caractéristique", data.columns, index=2)
     default_color = "blue"
     x_value = X[feat_1].values[0]
     colors = {x_value: "red"}
@@ -153,19 +157,18 @@ with tabs[2]:
     st.plotly_chart(fig_histogram)
 
     st.write('Positionnement du client sur 2 axes')
-    feat_2 = st.selectbox("Sélectionnez l'axe des abscisses", data.columns)
-    feat_3 = st.selectbox("Sélectionnez l'axe des ordonnées", data.columns)
+    feat_2 = st.selectbox("Sélectionnez l'axe des abscisses", data.columns, index=6)
+    feat_3 = st.selectbox("Sélectionnez l'axe des ordonnées", data.columns, index=7)
     
     x_value = X[feat_2].values[0]
     y_value = X[feat_3].values[0]
-    fig = px.scatter(data, x=feat_2, y=feat_3, color="score", color_continuous_scale= px.colors.sequential.deep)
-    fig.add_scatter(
-        x=[x_value],
-        y=[y_value],
-        mode='markers',
-        marker=dict(size=10, color='red'),  
-        name='Client value'
-    )
+
+    fig = go.Figure(
+    data=[
+        go.Scatter(x=data[feat_2], y=data[feat_3], mode='markers', marker=dict(size=5, color=data["score"], colorscale= "deep")),
+        go.Scatter(x=[x_value], y=[y_value], mode='markers', marker=dict(size=10, color='red'),name='Client value')        
+    ])
+
     st.plotly_chart(fig)
 
  
